@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "448124010560",
+    "firebase_url": "https://jovicionario.firebaseio.com",
+    "project_id": "jovicionario",
+    "storage_bucket": "jovicionario.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:448124010560:android:132ad9830d4d4cc7685fa5",
+        "android_client_info": {
+          "package_name": "com.flutter.jovicionario"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "448124010560-huh75b2iad9d6o9qckegtt7c90cm89m5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKVpipJij95IouqAiSyZdwAmgP0XUUNds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "448124010560-huh75b2iad9d6o9qckegtt7c90cm89m5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
