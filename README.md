@@ -1,4 +1,4 @@
-# Jovicionario
+# Jovicionário
 Código fonte do aplicativo Jovicionário.
 
 O aplicativo foi escrito na linguagem de programação Dart com o pacote Flutter. Ele tem alguns bugs que nao consegui resolver para a versão de lançamento e algumas partes do código que poderiam ser mais eficientes. 
