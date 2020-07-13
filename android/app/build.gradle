@@ -48,8 +48,8 @@ android {
         multiDexEnabled true
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 1
-        versionName "JoviPiloto 1.0"
+        versionCode 2
+        versionName "JoviAnimacoes 1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs{

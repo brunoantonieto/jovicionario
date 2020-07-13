@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:jovicionario/loadscreen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,12 +12,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Jovicionario',
       theme: ThemeData(
         primarySwatch: Colors.purple,
         accentColor: Colors.purple,
       ),
-      home: MyHomePage(),
+      home: AnimatedSplashScreen(),//MyHomePage(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -28,11 +29,17 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+
+  AnimationController animationController;
+  Animation<double> _animation;
+  Tween<double> _tween;
 
   int _word = 0;
   int _counter = 0;
   int dataLength;
+  var _jovirometro;
   Firestore firestore = Firestore.instance;
 
   final String urlBruno = 'https://twitter.com/brunoantonieto';
@@ -45,6 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
     double res = fix+count;
     return res;
   }
+
   addDrim(){
     setState(() {
       _counter++;
@@ -57,17 +65,49 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  _getJovirometro(number)async{
+    firestore.collection('jovi_words').getDocuments().then((data) async {
+      _jovirometro = data.documents[number]['jovirometro'].toDouble();
+
+      _tween.begin = _tween.end;
+      animationController.reset();
+      _tween.end = _jovirometro;
+      animationController.forward();
+
+      return _jovirometro;
+    });
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
+    _getJovirometro(0); //sim, isso é uma gambiarra.
     _getLength();
+
     super.initState();
+    animationController = AnimationController(
+        duration: const Duration(milliseconds: 500),
+        vsync: this
+    );
+    _tween = Tween(begin:0,end:_jovirometro);
+    _animation = _tween.animate(CurvedAnimation(
+      parent: animationController,
+      curve: Curves.easeInOut
+    ))
+        ..addListener((){setState(() {});});
+    animationController.forward();
   }
 
   void _randomize() {
     setState(() {
-      print(dataLength);
       _word = Random().nextInt(dataLength);
       _counter = 0;
+      _getJovirometro(_word);
     });
   }
 
@@ -91,6 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.info),
           ),
         ],
+        automaticallyImplyLeading: false,
       ),
       body: mainLayout(),
       floatingActionButton: randomizeButton(), //
@@ -152,6 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
   }
+
   Widget mainLayout(){
     return StreamBuilder(
         stream: Firestore.instance.collection('jovi_words').snapshots(),
@@ -165,8 +207,9 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           }
 
-          if (!snapshot.hasData) return const Text('Carregando...');
-          var jovirometro = snapshot.data.documents[_word]['jovirometro'];
+          if (!snapshot.hasData) return Center(child: const Text('Carregando...'));
+
+          //var jovirometro = snapshot.data.documents[_word]['jovirometro'];
 
           if(snapshot.data.documents[_word]['nome'] != 'Drim do drim'){
             return Container(
@@ -205,7 +248,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-
 
                     //PALAVRAS RELACIONADAS
                     RelatedStrings(),
@@ -258,21 +300,26 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: Colors.white,
-                              inactiveTrackColor: Colors.white,
-                              trackHeight: 0.1,
-                              thumbColor: Colors.white,
-                              thumbShape: CustomSliderThumbShape(enabledThumbRadius: 10),
-                              overlayColor: Colors.white.withAlpha(1),
-                            ),
-                            child: Slider(
-                              min: 0,
-                              max: 100,
-                              value: jovirometro.toDouble(),
-                              onChanged: (value){setState((){});},
-                            ),
+                          child: AnimatedBuilder(
+                            animation: animationController,
+                            builder: (_ , __) {
+                              return SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: Colors.white,
+                                  inactiveTrackColor: Colors.white,
+                                  trackHeight: 0.1,
+                                  thumbColor: Colors.white,
+                                  thumbShape: CustomSliderThumbShape(enabledThumbRadius: 10),
+                                  overlayColor: Colors.white.withAlpha(1),
+                                ),
+                                child: Slider(
+                                  min: 0,
+                                  max: 100,
+                                  value: _animation.value,
+                                  onChanged: (value){setState((){});},
+                                ),
+                              );
+                            }
                           ),
                         ),
                       ),
@@ -284,6 +331,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Text('Jovirômetro',style: TextStyle(fontWeight: FontWeight.bold, color:Colors.grey[800], fontSize: 22),)
                       ),
                     ),
+
                     Align(
                         alignment: Alignment.bottomLeft,
                         child: Padding(
@@ -415,7 +463,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                     //JOVIROMETRO
                     Padding(
-                      padding: const EdgeInsets.only(top:220),
+                      padding: const EdgeInsets.fromLTRB(0,210,0,10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
@@ -479,7 +527,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 27),
+                      padding: const EdgeInsets.only(bottom: 30),
                       child: Align(
                           alignment: Alignment.bottomCenter,
                           child: Text('Jovirômetro',style: TextStyle(fontWeight: FontWeight.bold, color:Colors.grey[800], fontSize: 22),)
@@ -562,6 +610,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         onTap: (){
                           setState(() {
                             _word = _getHash(item);
+                            _getJovirometro(_word);
                           });
                         },
                         child: Card(
